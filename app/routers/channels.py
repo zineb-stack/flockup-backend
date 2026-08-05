@@ -171,3 +171,21 @@ def get_recommended_channels(user_id: str, db: Session = Depends(get_db)):
 
     ordered = matched + others
     return [with_member_count(c, db) for c in ordered]
+
+@router.get("/{channel_id}/my-status/{user_id}")
+def get_my_membership_status(channel_id: str, user_id: str, db: Session = Depends(get_db)):
+    channel = db.query(models.Channel).filter(models.Channel.id == channel_id).first()
+    if not channel:
+        raise HTTPException(status_code=404, detail="Channel introuvable")
+
+    if channel.owner_id == user_id:
+        return {"status": "owner"}
+
+    membership = db.query(models.ChannelMember).filter_by(
+        channel_id=channel_id, user_id=user_id
+    ).first()
+
+    if not membership:
+        return {"status": "none"}
+    return {"status": membership.status}
+    

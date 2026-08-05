@@ -1,3 +1,4 @@
+from datetime import date as date_type
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -29,6 +30,14 @@ def create_task(user_id: str, task: schemas.TaskCreate, db: Session = Depends(ge
 @router.get("/{user_id}", response_model=list[schemas.TaskOut])
 def list_tasks(user_id: str, db: Session = Depends(get_db)):
     return db.query(models.Task).filter(models.Task.user_id == user_id).all()
+
+
+@router.get("/{user_id}/by-date/{target_date}", response_model=list[schemas.TaskOut])
+def list_tasks_by_date(user_id: str, target_date: date_type, db: Session = Depends(get_db)):
+    return db.query(models.Task).filter(
+        models.Task.user_id == user_id,
+        models.Task.due_date == target_date,
+    ).all()
 
 
 @router.put("/{task_id}/toggle", response_model=schemas.TaskOut)
