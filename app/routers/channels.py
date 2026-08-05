@@ -188,4 +188,15 @@ def get_my_membership_status(channel_id: str, user_id: str, db: Session = Depend
     if not membership:
         return {"status": "none"}
     return {"status": membership.status}
-    
+
+@router.get("/pending-count/{user_id}")
+def get_pending_count_for_owner(user_id: str, db: Session = Depends(get_db)):
+    owned_channels = db.query(models.Channel).filter(models.Channel.owner_id == user_id).all()
+    channel_ids = [c.id for c in owned_channels]
+    if not channel_ids:
+        return {"count": 0}
+    count = db.query(models.ChannelMember).filter(
+        models.ChannelMember.channel_id.in_(channel_ids),
+        models.ChannelMember.status == "pending",
+    ).count()
+    return {"count": count}    
