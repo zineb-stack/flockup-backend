@@ -78,6 +78,7 @@ class ChannelOut(BaseModel):
     description: Optional[str]
     goal_topic: Optional[str]
     is_private: bool
+    owner_id: UUID
     created_at: datetime
     member_count: int = 0
 
