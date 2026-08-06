@@ -102,6 +102,7 @@ class FeedbackCreate(BaseModel):
     rating: int
     message: str | None = None
     user_email: str | None = None
+    user_name: str | None = None
 
 
 @router.post("/feedback")
@@ -115,7 +116,8 @@ def send_feedback(feedback: FeedbackCreate):
             "html": f"""
                 <h2>Note : {stars} ({feedback.rating}/5)</h2>
                 <p><strong>Message :</strong> {feedback.message or 'Aucun message'}</p>
-                <p><strong>Email utilisateur :</strong> {feedback.user_email or 'Non fourni'}</p>
+                <p><strong>Nom :</strong> {feedback.user_name or 'Non fourni'}</p>
+                <p><strong>Email :</strong> {feedback.user_email or 'Non fourni'}</p>
             """,
         })
         return {"message": "Feedback envoyé"}
