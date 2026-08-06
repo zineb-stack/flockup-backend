@@ -91,3 +91,33 @@ def delete_user(user_id: str, db: Session = Depends(get_db)):
     db.delete(user)
     db.commit()
     return {"message": "Compte supprimé"}
+
+import resend
+import os
+from pydantic import BaseModel
+
+resend.api_key = os.getenv("RESEND_API_KEY")
+
+class FeedbackCreate(BaseModel):
+    rating: int
+    message: str | None = None
+    user_email: str | None = None
+
+
+@router.post("/feedback")
+def send_feedback(feedback: FeedbackCreate):
+    try:
+        stars = "⭐" * feedback.rating
+        resend.Emails.send({
+            "from": "FlockUp <onboarding@resend.dev>",
+            "to": "ennakhlazineb2@gmail.com",
+            "subject": f"Nouveau feedback FlockUp — {stars}",
+            "html": f"""
+                <h2>Note : {stars} ({feedback.rating}/5)</h2>
+                <p><strong>Message :</strong> {feedback.message or 'Aucun message'}</p>
+                <p><strong>Email utilisateur :</strong> {feedback.user_email or 'Non fourni'}</p>
+            """,
+        })
+        return {"message": "Feedback envoyé"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de l'envoi: {str(e)}")
