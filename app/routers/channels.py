@@ -199,4 +199,26 @@ def get_pending_count_for_owner(user_id: str, db: Session = Depends(get_db)):
         models.ChannelMember.channel_id.in_(channel_ids),
         models.ChannelMember.status == "pending",
     ).count()
-    return {"count": count}    
+    return {"count": count}  
+
+@router.delete("/{channel_id}/{user_id}")
+def delete_channel(channel_id: str, user_id: str, db: Session = Depends(get_db)):
+    channel = db.query(models.Channel).filter(models.Channel.id == channel_id).first()
+    if not channel:
+        raise HTTPException(status_code=404, detail="Channel introuvable")
+    if channel.owner_id != user_id:
+        raise HTTPException(status_code=403, detail="Seul le propriétaire peut supprimer ce channel")
+    db.delete(channel)
+    db.commit()
+    return {"message": "Channel supprimé"}
+
+
+@router.get("/{channel_id}/members")
+def get_channel_members(channel_id: str, db: Session = Depends(get_db)):
+    memberships = db.query(models.ChannelMember).filter_by(channel_id=channel_id, status="approved").all()
+    result = []
+    for m in memberships:
+        user = db.query(models.User).filter(models.User.id == m.user_id).first()
+        if user:
+            result.append({"user_id": str(user.id), "name": user.name, "avatar_url": user.avatar_url})
+    return result  
