@@ -110,7 +110,7 @@ def send_feedback(feedback: FeedbackCreate):
         stars = "⭐" * feedback.rating
         resend.Emails.send({
             "from": "FlockUp <onboarding@resend.dev>",
-            "to": "ennakhlazineb2@gmail.com",
+            "to": "ennakhlazineb@gmail.com",
             "subject": f"Nouveau feedback FlockUp — {stars}",
             "html": f"""
                 <h2>Note : {stars} ({feedback.rating}/5)</h2>
