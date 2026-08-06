@@ -206,7 +206,7 @@ def delete_channel(channel_id: str, user_id: str, db: Session = Depends(get_db))
     channel = db.query(models.Channel).filter(models.Channel.id == channel_id).first()
     if not channel:
         raise HTTPException(status_code=404, detail="Channel introuvable")
-    if channel.owner_id != user_id:
+    if str(channel.owner_id) != str(user_id):
         raise HTTPException(status_code=403, detail="Seul le propriétaire peut supprimer ce channel")
     db.delete(channel)
     db.commit()

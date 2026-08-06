@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from pydantic import BaseModel
 
 from ..database import get_db
 from .. import models, schemas
@@ -40,6 +41,28 @@ def delete_habit(habit_id: str, db: Session = Depends(get_db)):
     db.delete(habit)
     db.commit()
     return {"message": "Habitude supprimée"}
+
+
+class HabitUpdate(schemas.BaseModel):
+    title: str | None = None
+    category: str | None = None
+    frequency: str | None = None
+
+
+@router.put("/{habit_id}", response_model=schemas.HabitOut)
+def update_habit(habit_id: str, update: HabitUpdate, db: Session = Depends(get_db)):
+    habit = db.query(models.Habit).filter(models.Habit.id == habit_id).first()
+    if not habit:
+        raise HTTPException(status_code=404, detail="Habitude introuvable")
+    if update.title is not None:
+        habit.title = update.title
+    if update.category is not None:
+        habit.category = update.category
+    if update.frequency is not None:
+        habit.frequency = update.frequency
+    db.commit()
+    db.refresh(habit)
+    return habit
 
 from datetime import date
 
